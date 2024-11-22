@@ -27,34 +27,34 @@
 <AppShell>
 	<svelte:fragment slot="header">
 		<!-- App Bar -->
-		<AppBar>
+		<AppBar background="variant-filled-tertiary">
 			<svelte:fragment slot="lead">
-				<strong class="text-xl uppercase">Olimpo Systems</strong>
+				<strong class="text-xl uppercase font-bold italic">Olimpo Systems</strong>
 			</svelte:fragment>
 			<svelte:fragment slot="trail">
 				<a
-					class="btn btn-sm variant-fill-surface"
+					class="btn btn-sm variant-fill-surface font-bold"
 					href="/servicios"
 					rel="noreferrer"
 				>
 					Servicios
 				</a>
 				<a
-					class="btn btn-sm variant-fill-surface"
+					class="btn btn-sm variant-fill-surface font-bold"
 					href="/clientes"
 					rel="noreferrer"
 				>
 					Clientes
 				</a>
 				<a
-					class="btn btn-sm variant-fill-surface"
-					href="/tecnicos"
+					class="btn btn-sm variant-fill-surface font-bold"
+					href="/tecnicos" 
 					rel="noreferrer"
 				>
 					Técnicos
 				</a>
 				<a
-					class="btn btn-sm variant-ghost-surface"
+					class="btn btn-sm variant-filled-primary"
 					href="/"
 					rel="noreferrer"
 				>
@@ -64,5 +64,5 @@
 		</AppBar>
 	</svelte:fragment>
 	<!-- Page Route Content -->
-	<slot />
+	<slot/>
 </AppShell>

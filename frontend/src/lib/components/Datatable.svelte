@@ -80,7 +80,6 @@
 	<!-- Header -->
 	<header class="flex justify-between gap-4">
 		<Search {handler} />
-		<RowsPerPage {handler} />
 	</header>
 	<!-- Table -->
 	<table class="table table-hover table-compact w-full table-auto">
@@ -89,26 +88,21 @@
                 {#each fields as field}
 				<ThSort {handler} orderBy={field}>{field.replace(/_name/g, ' ').replace(/_/g, ' ')}</ThSort>
 				{/each}
-				<td></td>
+				<td class="variant-filled-tertiary border border-gray-100 font-bold text-center" >Acciones</td>
 			</tr>
-			<tr>
-                {#each fields as field}
-						<ThFilter {handler} filterBy="{field}" />
-                {/each}
-				<td></td>
-			</tr>
+			
 		</thead>
-		<tbody>
+		<tbody class="variant-filled-secondary">
 			{#each $rows as row}
 			
 				<tr>
 					
                     {#each fields as field}
-							<td class="text-justify indent-2  text-wrap">{row[field]}</td>
+							<td class="text-justify indent-2  text-wrap border border-gray-500">{row[field]}</td>
 					{/each}
-					<td class="flex flex-row gap-3 mx-2">
-						<button on:click|stopPropagation={async () => await goto(`/dashboard/${endpointName}/${row.id}`)}><i class="fa-solid fa-pen-to-square text-2xl"></i></button>
-						<button on:click|stopPropagation={() => modalDelete(row)}><i class="fa-solid fa-xmark text-2xl"></i></button>
+					<td class="flex flex-row gap-3 mx-2 ">
+						<button on:click|stopPropagation={async () => await goto(`/dashboard/${endpointName}/${row.id}`)} class="btn  variant-filled-primary border border-gray-500 w-1/2 h-[2rem]">Eliminar </button>|
+						<button on:click|stopPropagation={() => modalDelete(row)} class="btn  variant-filled-primary border border-gray-500 w-1/2  h-[2rem]">Editar</button>
 					</td>
 					
 				</tr>

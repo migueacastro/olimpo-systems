@@ -22,6 +22,25 @@ class Tecnico(models.Model):
         return self.nombres + ' ' + self.apellidos
 
 
+class TipoDispositivo(models.Model):
+    nombre = models.CharField(max_length=50, blank=False, null=False)
+    activo = models.BooleanField(default=True)
+
+    def __unicode__(self):
+        return self.nombre
+    
+
+class Dispositivo(models.Model):
+    tipo = models.ForeignKey(TipoDispositivo, on_delete=models.DO_NOTHING, related_name='dispositivos')
+    marca = models.CharField(max_length=50, blank=True, null=True)
+    modelo = models.CharField(max_length=50, blank=True, null=True)
+    serial = models.CharField(max_length=50, blank=True, null=True)
+    imeis = models.JSONField(null=True, blank=True)
+    activo = models.BooleanField(default=True)
+
+
+
+
 class Servicio(models.Model):
     fecha = models.DateField()
     cliente = models.ForeignKey(Cliente, on_delete=models.DO_NOTHING)
@@ -29,6 +48,7 @@ class Servicio(models.Model):
     activo = models.BooleanField(default=True)
     falla_reportada = models.TextField()
     reparacion_efectuada = models.TextField()
+    dispositivo = models.ForeignKey(Dispositivo, on_delete=models.DO_NOTHING, default=None, null=True)
 
     def __unicode__(self):
         return self.falla_reportada

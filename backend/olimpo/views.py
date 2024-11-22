@@ -11,20 +11,24 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class ClienteViewSet(viewsets.ModelViewSet):
-    queryset = Cliente.objects.all()
+    queryset = Cliente.objects.filter(activo=True)
     serializer_class = ClienteSerializer
 
 
 
 class TecnicoViewSet(viewsets.ModelViewSet):
-    queryset = Tecnico.objects.all()
+    queryset = Tecnico.objects.filter(activo=True)
     serializer_class = TecnicoSerializer
 
-
+class DispositivoViewSet(viewsets.ModelViewSet):
+    queryset = Dispositivo.objects.filter(activo=True)
+    serializer_class = DispositivoSerializer
 
 class ServicioViewSet(viewsets.ModelViewSet):
-    queryset = Servicio.objects.all()
+    queryset = Servicio.objects.filter(activo=True)
     serializer_class = ServicioSerializer
 
 
-
+class TipoDispositivoViewSet(viewsets.ModelViewSet):
+    queryset = TipoDispositivo.objects.filter(activo=True)
+    serializer_class = TipoDispositivoSerializer
