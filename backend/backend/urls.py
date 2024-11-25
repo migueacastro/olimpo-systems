@@ -16,8 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from schema_graph.views import Schema
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('olimpo.urls')),
+    path('schema/', Schema.as_view()),
 ]

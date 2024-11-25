@@ -36,8 +36,8 @@
         tecnicos = await getData(apiEndpoint + 'tecnicos');
         clientes = await getData(apiEndpoint + 'clientes');
         tiposDispositivos = await getData(apiEndpoint + 'tipos_dispositivos');
-        tipo = tiposDispositivos[0].id;
-        tecnico = tecnicos[0].id;
+        tipo = tiposDispositivos[0]?.id;
+        tecnico = tecnicos[0]?.id;
     })
 </script>
 
@@ -58,7 +58,7 @@
 		</header>
 		<!-- Divider -->
 		<!-- Component -->
-		<Datatable endpoint="servicios" fields={['id', 'fecha','cliente', 'cedula', 'dispositivo','falla_reportada', 'reparacion_efectuada', 'tecnico', ]} />
+		<Datatable endpoint="servicios" fields={['id', 'fecha_salida','fecha_entrada', 'cliente', 'tecnico','falla_reportada', 'reparacion_efectuada', 'dispositivos', 'observaciones']} />
 	
         {:else}
             <header class="flex justify-between items-center">

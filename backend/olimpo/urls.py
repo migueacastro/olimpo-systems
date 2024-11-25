@@ -1,6 +1,5 @@
 from django.urls import path, include
 from rest_framework import routers # type: ignore
-
 from olimpo.views import *
 
 router = routers.DefaultRouter()

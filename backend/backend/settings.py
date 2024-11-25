@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'olimpo',
-    'corsheaders'
+    'corsheaders',
+    'schema_graph',
 ]
 
 MIDDLEWARE = [

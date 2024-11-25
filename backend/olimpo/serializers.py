@@ -26,16 +26,17 @@ class TecnicoSerializer(serializers.ModelSerializer):
 class DispositivoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Dispositivo
-        fields = ['id', 'marca', 'modelo', 'serial', 'imeis', 'tipo']
+        fields = ['id', 'marca', 'modelo', 'serial', 'imeis', 'status', 'tipo']
 
 class ServicioSerializer(serializers.ModelSerializer):
     nombre_tecnico = serializers.SerializerMethodField()
     nombre_cliente = serializers.SerializerMethodField()
     cedula = serializers.SerializerMethodField()
-    nombre_dispositivo = serializers.SerializerMethodField()
+    dispositivos = DispositivoSerializer(many=True)
+    tipo = TipoDispositivoSerializer()
     class Meta:
         model = Servicio
-        fields = ['id','fecha', 'falla_reportada', 'reparacion_efectuada', 'tecnico', 'cliente', 'cedula', 'dispositivo', 'nombre_tecnico', 'nombre_cliente', 'nombre_dispositivo']
+        fields = ['id','fecha_salida', 'fecha_entrega', 'nombre_tecnico', 'nombre_cliente', 'cedula', 'dispositivos', 'falla_reportada', 'reparacion_efectuada', 'observaciones']
     
     def get_nombre_tecnico(self, obj):
         return obj.tecnico.nombres + ' ' + obj.tecnico.apellidos
