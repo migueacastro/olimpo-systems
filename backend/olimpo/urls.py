@@ -16,5 +16,6 @@ urlpatterns = [
     path('login/', UserLoginView.as_view()),
     path('logout/', UserLogoutView.as_view()),
     path('user/', UserProfileView.as_view()),
+    path('export/<int:id>/', service_to_pdf),
 
 ]

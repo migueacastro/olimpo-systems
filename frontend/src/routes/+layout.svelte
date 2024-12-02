@@ -43,36 +43,41 @@
 		<!-- App Bar -->
 		<AppBar background="variant-filled-tertiary">
 			<svelte:fragment slot="lead">
-				<strong class="text-xl uppercase font-bold italic">Olimpo Systems</strong>
+				<a href="/"><strong class="text-xl uppercase font-bold italic">Olimpo Systems</strong></a>
 			</svelte:fragment>
 			<svelte:fragment slot="trail">
 				{#if $user.email !== null}
-				<a
+				<button
 					class="btn btn-sm variant-fill-surface font-bold"
-					href="/servicios"
+					on:click={() => goto('/servicios')}
 				>
 					Servicios
-				</a>
-				<a
+				</button>
+				<button
 					class="btn btn-sm variant-fill-surface font-bold"
-					href="/clientes"
+					on:click={() => goto('/clientes')}
 				>
 					Clientes
-				</a>
-				<a
+				</button>
+				<button
 					class="btn btn-sm variant-fill-surface font-bold"
-					href="/dispositivos" 
+					on:click={() => goto('/dispositivos')}
 				>
 					Dispositivos
-				</a>
+				</button>
 				{#if $user.is_superuser}
-				<a
+				<button
 					class="btn btn-sm variant-fill-surface font-bold"
-					href="/tecnicos" 
+					on:click={() => window.location.href = '/tecnicos'}
 				>
 					Técnicos
-				</a>
+				</button>
 				{/if}
+				<p
+					class=" variant-fill-surface font-bold"
+				>
+					{$user.nombres + ' ' + $user.apellidos}
+				</p>
 				<button
 					class="btn btn-sm variant-fill-surface font-bold"
 					on:click={unauthenticateUser}

@@ -9,10 +9,20 @@
     export let data: any = {};
     let nombres: any = '';
     let apellidos: any = '';
-    
     let cedula: any = '';
     let telefono: any = '';
+    let servicios: any = [];
     let errors: any = {};
+    let tecnicos: any = [];
+
+    async function findTecnicoById(id: any) {
+        let tecnicos = await getData(apiEndpoint + 'tecnicos');
+;
+        let tecnico = await tecnicos.find((tecnico: any) => tecnico.id == id);
+        return tecnico.nombres + " " + tecnico.apellidos;
+    }
+
+
     
     let handleSubmit = () => {
         const endpoint = apiEndpoint + 'clientes/' + data.id + '/';
@@ -40,13 +50,14 @@
         
     };
     
-    
+
     onMount(async () => {
-        let tecnico = await getData(apiEndpoint + 'clientes/' + data.id);
-        nombres = tecnico?.nombres;
-        apellidos = tecnico?.apellidos;
-        cedula = tecnico?.cedula;
-        telefono = tecnico?.telefono;
+        let cliente = await getData(apiEndpoint + 'clientes/' + data.id);
+        nombres = cliente?.nombres;
+        apellidos = cliente?.apellidos;
+        cedula = cliente?.cedula;
+        telefono = cliente?.telefono;
+        servicios = cliente?.servicios;
     
     })
     </script>
@@ -55,7 +66,7 @@
         <!-- Header -->
         <div class="mx-5 lg:m-32">
                 <header class="flex justify-between items-center">
-                    <h1 class="h1 m-5 text-secondary-50 font-bold italic">Clientes</h1>
+                    <h1 class="h1 m-5 text-secondary-50 font-bold italic">Editar Cliente</h1>
 
                 </header>
                 <!-- Divider -->
@@ -110,5 +121,37 @@
                         {/if}
                     </div>        
                 </form>
+                <!--
+                {#if servicios.length > 0}
+                <table class="table table-hover table-compact table-auto overflow-x-scroll">
+                    <thead>
+                        <tr>
+                            <th class="variant-filled-tertiary border border-gray-100 font-bold text-center">Fecha</th>
+                            <th class="variant-filled-tertiary border border-gray-100 font-bold text-center">Tecnico</th>
+                            <th class="variant-filled-tertiary border border-gray-100 font-bold text-center">Dispositivos</th>
+
+                        </tr>
+                    </thead>
+                    <tbody class="variant-filled-secondary">
+                       
+                        {#each servicios as servicio}
+                           
+                            <tr >
+                                 
+                                <td class="border-gray-100 font-bold text-center">
+                                    {servicio?.fecha_entrega}
+                                </td>             
+                                <td class="border-gray-100 font-bold text-center">
+                                    {findTecnicoById(servicio?.tecnico_id)}
+                                </td>
+                                <td> <a href="/servicios/{servicio.id}">Dispositivos</a></td>
+                            
+                            </tr>
+                        {/each}
+                        
+                    </tbody>  
+                </table>
+            {/if}
+            -->
         </div>
     </div>

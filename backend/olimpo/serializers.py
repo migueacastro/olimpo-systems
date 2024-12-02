@@ -9,6 +9,8 @@ from rest_framework.exceptions import AuthenticationFailed
 from drf_writable_nested.serializers import WritableNestedModelSerializer
 from drf_writable_nested.mixins import UniqueFieldsMixin, NestedUpdateMixin
 from rest_framework.validators import UniqueValidator
+from django.db.models import Count
+import json
 
 
 
@@ -41,9 +43,10 @@ class UserLoginSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(max_length=100, style={'input_type': 'password'}, write_only=True)
     confirmPassword = serializers.CharField(max_length=100, style={'input_type': 'password'}, write_only=True)
+    dispositivos_reparados = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = get_user_model()
-        fields = ['id', 'nombres','apellidos','cedula','telefono', 'email','is_superuser', 'password', 'confirmPassword']
+        fields = ['id', 'nombres','apellidos','cedula','telefono', 'email','is_superuser', 'dispositivos_reparados', 'password', 'confirmPassword']
 
     def create(self, validated_data):
         # Create the user
@@ -67,6 +70,11 @@ class UserSerializer(serializers.ModelSerializer):
         user_instance.is_superuser = validated_data.get('is_superuser', user_instance.is_superuser)
         user_instance.save()
         return user_instance
+    
+    def get_dispositivos_reparados(self, obj):
+        return Servicio.objects.filter(tecnico=obj.id).annotate(
+            dispositivoservicio_count=Count('dispositivoservicio')
+        ).count()
 
 
 class ResetPasswordEmailSerializer(serializers.Serializer):
@@ -104,14 +112,17 @@ class SetNewPasswordSerializer(serializers.Serializer):
             raise AuthenticationFailed('The reset link is invalid', 401)
 
 class ClienteSerializer(serializers.ModelSerializer):
+    servicios = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = Cliente
-        fields = ['id', 'cedula', 'nombres', 'apellidos', 'telefono']
-    def validate_cedula(self, value):
-        if self.context['request'].method == 'POST':
-            if Cliente.objects.filter(cedula=value).exists():
-                raise serializers.ValidationError('Cedula already exists')
-        return value
+        fields = ['id', 'cedula', 'nombres', 'apellidos', 'telefono', 'servicios']
+    
+    def create(self, validated_data):
+        cliente, created = Cliente.objects.update_or_create(cedula=validated_data['cedula'], defaults=validated_data)
+        return cliente
+    
+    def get_servicios(self, obj):
+        return Servicio.objects.filter(cliente=obj.id).all().values()
 
     
 
@@ -149,10 +160,13 @@ class ServicioSerializer(WritableNestedModelSerializer):
     costo_total = serializers.SerializerMethodField(read_only=True)
     cliente = ClienteSerializer(partial = True)
     cedula = serializers.SerializerMethodField(read_only=True)
+    nombre_tecnico = serializers.SerializerMethodField(read_only=True)
+    nombre_cliente = serializers.SerializerMethodField(read_only=True)
     dispositivos = DispositivoServicioSerializer(many=True, source='dispositivoservicio_set', partial=True)
+    status = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = Servicio
-        fields = ['id','fecha_salida', 'fecha_entrega', 'tecnico',  'cliente', 'cedula', 'dispositivos', 'observaciones', 'costo_total']
+        fields = ['id','fecha_salida', 'fecha_entrega', 'nombre_tecnico',  'nombre_cliente', 'cedula', 'dispositivos', 'observaciones', 'costo_total', 'status', 'tecnico', 'cliente']
     
     def get_nombre_tecnico(self, obj):
         return obj.tecnico.nombres + ' ' + obj.tecnico.apellidos
@@ -164,8 +178,14 @@ class ServicioSerializer(WritableNestedModelSerializer):
         return obj.cliente.cedula
     
     def get_costo_total(self, obj):
-        return sum(dispositivo.costo for dispositivo in obj.dispositivoservicio_set.all())
+        return str(sum(dispositivo.costo for dispositivo in obj.dispositivoservicio_set.all())) + "$"
 
     def get_nombre_dispositivo(self, obj):
         return obj.dispositivo.marca + obj.dispositivo.modelo
+    
+    def get_status(self, obj):
+        for dispositivo in obj.dispositivoservicio_set.all():
+            if dispositivo.status != 'REPARADO':
+                return 'EN REPARACIÓN'
+        return 'REPARADO'
     

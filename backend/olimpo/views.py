@@ -1,6 +1,9 @@
 from rest_framework import viewsets, permissions, authentication
 from rest_framework.authentication import TokenAuthentication
 from django.contrib.auth import authenticate
+from django.http import HttpResponse, FileResponse
+import io
+
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
@@ -11,7 +14,13 @@ from rest_framework.authentication import TokenAuthentication
 from olimpo.serializers import UserSerializer
 from olimpo.models import *
 from olimpo.serializers import *
-from django.http import HttpResponse
+
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, BaseDocTemplate, Frame, PageTemplate
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_LEFT
+from reportlab.lib.units import mm
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
 # Create your views here.
 class UserRegistrationView(APIView):
@@ -172,3 +181,95 @@ class TipoDispositivoViewSet(viewsets.ModelViewSet):
         self.object.save()
     
 
+def service_to_pdf(request, id):
+
+    # Create bytestream buffer
+    buf = io.BytesIO()
+    # Create a BaseDocTemplate
+    doc = BaseDocTemplate(buf, pagesize=letter)
+    # Create a frame
+    frame = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id='normal')
+    
+    # Create a PageTemplate
+    template = PageTemplate(id='test', frames=frame)
+
+    
+    # Add PageTemplate to the BaseDocTemplate
+    doc.addPageTemplates([template])
+    servicio = ServicioSerializer(instance=Servicio.objects.get(id=id)).data
+
+    tecnico = UserSerializer(instance=User.objects.get(id=servicio['tecnico'])).data
+    bullet_style = ParagraphStyle(
+        name='Bullet',
+        fontSize=10,
+        leading=12,
+        leftIndent=10,
+        bulletFontName='Helvetica',
+        bulletFontSize=10,
+        bulletColor=colors.black,
+        textColor=colors.black,
+        bulletType='bullet',
+        alignment=TA_LEFT,
+    )
+        
+    headers = ['N', 'Marca', 'Modelo', 'Serial', 'Imeis', 'Reparaciones', 'Costo']
+
+    data = [headers]
+
+    for n, item in enumerate(servicio['dispositivos'], 1):
+        reparaciones_list = ['• ' + str(r['nombre']) for r in item['reparaciones']]
+        reparaciones_paragraph = Paragraph('<br/>'.join(reparaciones_list), bullet_style)
+        row = [
+            n,
+            Paragraph(str(item['dispositivo']['marca'])),
+            Paragraph(str(item['dispositivo']['modelo'])),
+            Paragraph(str(item['dispositivo']['serial'])),
+            Paragraph(str(', '.join(item['dispositivo']['imeis']['data']) if item['dispositivo']['imeis']['data'] != ["",""] else "No")),
+            reparaciones_paragraph,
+            Paragraph(str(item['costo']) + "$"),
+        ]
+        data.append(row)
+
+    styles = getSampleStyleSheet()
+    title_style = styles['Title']  
+
+    title = Paragraph("OLIMPO SYSTEMS", title_style)
+    fecha_entrega = Paragraph("Fecha de entrada: " + str(servicio['fecha_entrega']), styles['Normal'])
+    fecha_salida = Paragraph("Fecha de salida: " + str(servicio['fecha_salida']), styles['Normal'])
+    cliente = Paragraph("Cliente: " + str(servicio['cliente']['nombres'] + " " + str(servicio['cliente']['apellidos'])), styles['Normal'])
+    tecnico = Paragraph("Tecnico: " + str(tecnico['nombres'] + " " + tecnico['apellidos']), styles['Normal'])
+    observaciones = Paragraph("Observaciones: " + str(servicio['observaciones']), styles['Normal'])
+    cedula = Paragraph("Cedula: " + str(servicio['cedula']), styles['Normal'])
+    costo_total = Paragraph("Total: " + str(servicio['costo_total']), styles['Normal'])
+    status = Paragraph("Status: " + str(servicio['status']), styles['Normal'])
+    fecha_actual = Paragraph("Fecha de emision: " + str(datetime.date(datetime.now())), styles['Normal'])
+    col_widths = [16*mm, 20*mm, 20*mm, 28*mm, 20*mm, 48*mm, 16*mm]
+    table = Table(data, colWidths=col_widths)
+
+    style = TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),  
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),  
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),  
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),  
+        ('FONTSIZE', (0, 0), (-1, -1), 8),  
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),  
+        ('TOPPADDING', (0, 1), (-1, -1), 6),  
+        ('BOTTOMPADDING', (0, 1), (-1, -1), 6),  
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),  
+        ('LINEABOVE', (0, 0), (-1, 0), 2, colors.black),  
+        ('LINEBELOW', (0, -1), (-1, -1), 2, colors.black),  
+        ('SPLITLONGWORDS', (0, 1), (-1, -1), True),  # Allow text to wrap to the next line
+        ('KEEPWITHNEXT', (0, 1), (-1, -1), True),  
+    ])
+    table.setStyle(style)
+
+    spacer2x = Spacer(1, 15*mm)
+    spacer1x = Spacer(1, 7*mm)
+    
+    story = [title, fecha_entrega, fecha_salida, status, tecnico, cliente, cedula, observaciones, spacer2x, table, spacer1x, costo_total, spacer1x, fecha_actual]
+    doc.build(story)
+    buf.seek(0)
+
+    
+    return FileResponse(buf, as_attachment=True, filename=f'servicio-{servicio['cliente']['cedula']}-{servicio['fecha_entrega']}.pdf')

@@ -1,7 +1,8 @@
 <script lang="ts">
     import { goto } from '$app/navigation';
-    import { authenticateUser } from '$lib/stores/auth';
+    import { authenticateUser, onlyAuthenticated } from '$lib/stores/auth';
     import { apiEndpoint } from '$lib/endpoint';
+	import { onMount } from 'svelte';
     let email = '';
     let password = '';
     let errors: any = {};
@@ -34,6 +35,11 @@
             }
         })
     };
+    onMount(async () => {
+        if (await onlyAuthenticated()) {
+            goto('/');
+        }
+    })
 </script>
 <header class="text-center py-4 text-white mt-[5rem]">
 	<div class="text-center mb-2 text-3xl font-bold">Iniciar Sesión</div>

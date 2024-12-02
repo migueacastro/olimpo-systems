@@ -103,7 +103,7 @@
 							>{field.replace(/_name/g, ' ').replace(/_/g, ' ')}</ThSort
 						>
 					{/each}
-					{#if !(endpoint === 'tecnicos' || $user.is_superuser)}
+					{#if (endpoint === 'tecnicos' && $user.is_superuser) || endpoint != 'tecnicos'}
 					<td class="variant-filled-tertiary border border-gray-100 font-bold text-center"
 						>Acciones</td
 					>
@@ -117,9 +117,15 @@
 						<td class="texrt-justify indent-2 text-wrap border border-gray-500">
 							{#if typeof row[field] === 'object'}
 								{#if row[field]?.data}
-									{row[field]?.data.join(', ')}
-								{:else if row[field]?.length > 1 && row[field]?.[0]?.dispositivo}
+									{#if  row[field].data[0] === "" && row[field].data[1] === ""}
+										{"No"}
+									{:else }
+										{row[field]?.data.join(', ')}
+									{/if}
+								{:else if row[field]?.length  && row[field]?.[0]?.dispositivo}
 									{formatDispositivos(row[field])}
+								{:else if row[field] == null}
+									{"No"}
 								{:else}					
 									{(row[field]?.nombre) ? row[field]?.nombre : row[field]?.nombres}
 								{/if}
@@ -128,7 +134,7 @@
 							{/if}
 						</td>
 						{/each}
-						{#if !(endpoint === 'tecnicos' || $user.is_superuser)}
+						{#if (endpoint === 'tecnicos' && $user.is_superuser) || endpoint != 'tecnicos'}
 						<td class="flex flex-row gap-3 mx-2">
 							<button
 								on:click|stopPropagation={() => deleteRow(row)}

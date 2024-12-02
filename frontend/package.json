@@ -35,6 +35,7 @@
   "type": "module",
   "dependencies": {
     "@floating-ui/dom": "1.6.12",
+    "base64topdf": "^1.1.8",
     "highlight.js": "11.10.0"
   }
 }

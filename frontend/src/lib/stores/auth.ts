@@ -53,7 +53,7 @@ export const onlyStaff = async (userData: any) => {
 export const onlyAdmin = async (userData: any) => {
     await authenticateUser();
     await onlyAuthenticated();
-    if (!(userData.is_superuser && userData.is_staff) || !await onlyAuthenticated()) {
+    if (!(userData.is_superuser) || !await onlyAuthenticated()) {
         await window.history.back();
     }
 }

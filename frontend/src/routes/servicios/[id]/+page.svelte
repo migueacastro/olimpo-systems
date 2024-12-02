@@ -5,6 +5,8 @@
     import { getData } from '$lib/components/data';
     import { apiEndpoint } from '$lib/endpoint';
 	import { onlyAuthenticated } from '$lib/stores/auth';
+    import { tick } from 'svelte';
+
     initializeStores();
 	let tecnicos: any = [];
     let clientes: any = [];
@@ -41,29 +43,37 @@
     let costototal: number = 0;
     let observaciones: any = '';
     $: total = dispositivos.reduce((acc, dispositivo: any) => acc + parseFloat(dispositivo.costo), 0);
-
+    function updateDispositivos() {
+        total = dispositivos.reduce((acc, dispositivo: any) => acc + parseFloat(dispositivo.costo), 0);
+    }
     function addDispositivo() {
         dispositivos = [...dispositivos, {dispositivo: {marca: '', modelo: '', serial: '',  imeis: {data: ['', '']}, tipo: ''}, reparaciones: [{nombre: ''}], costo: 5.0, status: 'EN REPARACIÓN'}];
+        updateDispositivos();
     }
     function removeDispositivo(dispositivo: any) {
         dispositivos = dispositivos.filter((d: any) => d !== dispositivo);
-    }
+        updateDispositivos();
+    }   
 
     function removeReparacion(reparacion: any) {
         selectedDispositivoIndex = dispositivos.findIndex(dispositivo => dispositivo === selectedDispositivo);
         dispositivos[selectedDispositivoIndex].reparaciones = dispositivos[selectedDispositivoIndex]?.reparaciones.filter((r: any) => r !== reparacion);
         selectedDispositivo = dispositivos[selectedDispositivoIndex];
+        updateDispositivos();
     }
 
     function addReparacion() {
         selectedDispositivoIndex = dispositivos.findIndex(dispositivo => dispositivo === selectedDispositivo);
         dispositivos[selectedDispositivoIndex].reparaciones= [...dispositivos[selectedDispositivoIndex].reparaciones, {nombre: ''}];
         selectedDispositivo = dispositivos[selectedDispositivoIndex];
+        updateDispositivos();
     }
 
     function selectDispositivo(dispositivo: any) {
         selectedDispositivo = dispositivo;
+        selectedDispositivoIndex = dispositivos.findIndex(dispositivo => dispositivo === selectedDispositivo);
     }
+
     function handleSubmit() {
         const endpoint = apiEndpoint + 'servicios' + '/' + data.id + '/';
         let cliente = {
@@ -135,7 +145,7 @@
         {#if !selectedDispositivo}
         <!-- PARTE 2-->
             <header class="flex justify-between items-center">
-                <h1 class="h1 m-5 text-secondary-50 font-bold italic">Agregar Servicio</h1>
+                <h1 class="h1 m-5 text-secondary-50 font-bold italic">Editar Servicio</h1>
                 
             </header>
             <form>
@@ -165,7 +175,7 @@
                     <div class="flex flex-row w-full">
                         <div class="mx-4 w-1/3">
                             <label for="cedula" class="text-secondary-100 font-bold">Cedula</label>
-                            <input type="text" name="cedula" class="w-full" bind:value={cedula}>
+                            <input type="text" name="cedula" class="disabled:bg-gray-200 w-full" bind:value={cedula}>
                         </div>
                         <div class="mx-4 w-1/3" >
                             <label for="telefono" class="text-secondary-100 font-bold">Nro. Teléfono</label>
@@ -249,15 +259,16 @@
                     class=" m-4 btn btn-md variant-filled-primary border border-gray-500"
                     on:click={handleSubmit}
                     >Guardar</button>
-                    <button
+                    <a
                     type="button"
                     class=" m-4 btn btn-md variant-filled-primary border border-gray-500"
-                    on:click={() => showForm = !showForm}
-                    >Imprimir</button>
+                    href="{apiEndpoint}export/{data.id}"
+                    target="_blank"
+                    >Imprimir</a>
                     <button
                         type="button"
                         class="m-4 btn btn-md variant-filled-primary border border-gray-500"
-                        on:click={() => showForm = !showForm}
+                        on:click={() => {window.location.href = '/servicios'}}
                     >
                         <span>Volver</span>
                     </button>
@@ -290,7 +301,7 @@
                         </tr>
                     </thead>
                     <tbody class="variant-filled-secondary">
-                        {#each selectedDispositivo?.reparaciones as reparacion}
+                        {#each dispositivos[selectedDispositivoIndex].reparaciones as reparacion}
                             <tr>
                                 <td class="border-gray-100 font-bold text-center">
                                     <input type="text" bind:value={reparacion.nombre} class="w-full">
@@ -311,7 +322,7 @@
                     <div class="flex flex-row">
                         <div class="flex flex-col my-2 mb-4 w-[10rem]">
                             <label for="" class="text-start w-full">Costo</label>
-                            <input type="number" class="" min="5" step="0.01" bind:value={selectedDispositivo.costo}>
+                            <input type="number" class="" min="5" step="0.01" bind:value={selectedDispositivo.costo} on:input={updateDispositivos}>
                         </div>
                         <div class="flex flex-col my-2 mb-4 w-[10rem] mx-4">
                             <label for="" class="text-start w-full">Status</label>

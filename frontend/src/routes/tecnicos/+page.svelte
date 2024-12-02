@@ -66,7 +66,7 @@
             {/if}
 		</header>
 		<!-- Component -->
-		<Datatable endpoint="tecnicos" fields={['id', 'cedula', 'email', 'nombres', 'apellidos', 'telefono']} />
+		<Datatable endpoint="tecnicos" fields={['id', 'cedula', 'email', 'nombres', 'apellidos', 'telefono', 'dispositivos_reparados']} />
         {:else}
         <header class="flex justify-between items-center">
             <h1 class="h1 m-5 text-secondary-50 font-bold italic">Agregar Técnicos</h1>

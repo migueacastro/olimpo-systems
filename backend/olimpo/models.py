@@ -126,7 +126,7 @@ class TipoDispositivo(models.Model):
 
 class Dispositivo(models.Model):
     tipo = models.ForeignKey(
-        TipoDispositivo, on_delete=models.DO_NOTHING, related_name="dispositivos"
+        TipoDispositivo, on_delete=models.CASCADE, related_name="dispositivos"
     )
     marca = models.CharField(max_length=50, blank=True, null=True)
     modelo = models.CharField(max_length=50, blank=True, null=True)
@@ -138,8 +138,8 @@ class Dispositivo(models.Model):
 class Servicio(models.Model):
     fecha_salida = models.DateField(blank=True, null=True)
     fecha_entrega = models.DateField(blank=True, null=True)
-    cliente = models.ForeignKey(Cliente, on_delete=models.DO_NOTHING)
-    tecnico = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    tecnico = models.ForeignKey(User, on_delete=models.CASCADE)
     activo = models.BooleanField(default=True)
     observaciones = models.TextField(blank=True, null=True)
 
@@ -148,8 +148,8 @@ class Servicio(models.Model):
     
 
 class DispositivoServicio(models.Model):
-    servicio = models.ForeignKey(Servicio, on_delete=models.DO_NOTHING, blank=True, null=True)
-    dispositivo = models.ForeignKey(Dispositivo, on_delete=models.DO_NOTHING, blank=True, null=True)
+    servicio = models.ForeignKey(Servicio, on_delete=models.CASCADE, blank=True, null=True)
+    dispositivo = models.ForeignKey(Dispositivo, on_delete=models.CASCADE, blank=True, null=True)
     activo = models.BooleanField(default=True)
     costo = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     status = models.CharField(max_length=50, choices=[('EN REPARACIÓN', 'En reparación'), ('REPARADO', 'Reparado')], blank=False, null=False, default='EN REPARACIÓN')
@@ -160,7 +160,7 @@ class DispositivoServicio(models.Model):
 
 class Reparacion(models.Model):
     nombre = models.CharField(max_length=50, blank=False, null=False)
-    dispositivo = models.ForeignKey(DispositivoServicio, on_delete=models.DO_NOTHING)
+    dispositivo = models.ForeignKey(DispositivoServicio, on_delete=models.CASCADE)
     activo = models.BooleanField(default=True)
 
     def __unicode__(self):

@@ -47,7 +47,7 @@
     
     
     onMount(async () => {
-        await onlyAdmin(user);
+        await onlyAdmin($user);
         let tecnico = await getData(apiEndpoint + 'tecnicos/' + data.id);
         nombres = tecnico?.nombres;
         apellidos = tecnico?.apellidos;

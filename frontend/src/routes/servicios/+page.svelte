@@ -38,30 +38,38 @@
     let tecnico: any = ''; 
     let tipo: any = '1';
     let observaciones: any = '';
-    $: total = dispositivos.reduce((acc, dispositivo: any) => acc + parseFloat(dispositivo.costo), 0);
+    let total = dispositivos.reduce((acc, dispositivo: any) => acc + parseFloat(dispositivo.costo), 0);
 
 
+    function updateDispositivos() {
+        total = dispositivos.reduce((acc, dispositivo: any) => acc + parseFloat(dispositivo.costo), 0);
+    }
     function addDispositivo() {
         dispositivos = [...dispositivos, {dispositivo: {marca: '', modelo: '', serial: '', imeis: {data: ['', '']}, tipo: ''}, reparaciones: [{nombre: ''}], costo: 5.0, status: 'EN REPARACIÓN'}];
+        updateDispositivos();
     }
     function removeDispositivo(dispositivo: any) {
         dispositivos = dispositivos.filter((d: any) => d !== dispositivo);
+        updateDispositivos();
     }
 
     function removeReparacion(reparacion: any) {
         selectedDispositivoIndex = dispositivos.findIndex(dispositivo => dispositivo === selectedDispositivo);
         dispositivos[selectedDispositivoIndex].reparaciones = dispositivos[selectedDispositivoIndex]?.reparaciones.filter((r: any) => r !== reparacion);
         selectedDispositivo = dispositivos[selectedDispositivoIndex];
+        updateDispositivos();
     }
 
     function addReparacion() {
         selectedDispositivoIndex = dispositivos.findIndex(dispositivo => dispositivo === selectedDispositivo);
         dispositivos[selectedDispositivoIndex].reparaciones= [...dispositivos[selectedDispositivoIndex].reparaciones, {nombre: ''}];
         selectedDispositivo = dispositivos[selectedDispositivoIndex];
+        updateDispositivos();
     }
 
     function selectDispositivo(dispositivo: any) {
         selectedDispositivo = dispositivo;
+        selectedDispositivoIndex = dispositivos.findIndex(dispositivo => dispositivo === selectedDispositivo);
     }
     function handleSubmit() {
         const endpoint = apiEndpoint + 'servicios' + '/';
@@ -96,6 +104,17 @@
             }
         })
     }
+    function findClientByCedula(cedula: any) {
+        if (!cedula) return;
+        for (let client of clientes) {
+            if (client.cedula === cedula) {
+                nombres = client.nombres;
+                apellidos = client.apellidos;
+                telefono = client.telefono;
+                return;
+            }
+        }
+    }
 
     $: showForm = false;
     onMount(async () => {
@@ -124,7 +143,7 @@
 				<span>Agregar</span>
             </button>
 		</header>
-		<Datatable endpoint="servicios" fields={['id', 'fecha_salida','fecha_entrega', 'tecnico', 'cliente', 'cedula', 'dispositivos', 'costo_total']} />
+		<Datatable endpoint="servicios" fields={['id', 'fecha_salida','fecha_entrega', 'nombre_tecnico', 'nombre_cliente', 'cedula', 'dispositivos', 'costo_total', 'status']} />
         <!-- FIN PARTE 1 -->
         {:else if !selectedDispositivo}
         <!-- PARTE 2-->
@@ -159,7 +178,7 @@
                     <div class="flex flex-row w-full">
                         <div class="mx-4 w-1/3">
                             <label for="cedula" class="text-secondary-100 font-bold">Cedula</label>
-                            <input type="text" name="cedula" class="w-full" bind:value={cedula}>
+                            <input type="text" name="cedula" class="w-full" bind:value={cedula} on:input={() => findClientByCedula(cedula)}>
                         </div>
                         <div class="mx-4 w-1/3" >
                             <label for="telefono" class="text-secondary-100 font-bold">Nro. Teléfono</label>
@@ -244,11 +263,6 @@
                     on:click={handleSubmit}
                     >Guardar</button>
                     <button
-                    type="button"
-                    class=" m-4 btn btn-md variant-filled-primary border border-gray-500"
-                    on:click={() => showForm = !showForm}
-                    >Imprimir</button>
-                    <button
                         type="button"
                         class="m-4 btn btn-md variant-filled-primary border border-gray-500"
                         on:click={() => showForm = !showForm}
@@ -284,7 +298,7 @@
                         </tr>
                     </thead>
                     <tbody class="variant-filled-secondary">
-                        {#each selectedDispositivo?.reparaciones as reparacion}
+                        {#each dispositivos[selectedDispositivoIndex].reparaciones as reparacion}
                             <tr>
                                 <td class="border-gray-100 font-bold text-center">
                                     <input type="text" bind:value={reparacion.nombre} class="w-full">
@@ -305,7 +319,7 @@
                     <div class="flex flex-row">
                         <div class="flex flex-col my-2 mb-4 w-[10rem]">
                             <label for="" class="text-start w-full">Costo</label>
-                            <input type="number" class="" min="5" step="0.01" bind:value={selectedDispositivo.costo}>
+                            <input type="number" class="" min="5" step="0.01" bind:value={selectedDispositivo.costo}  on:input={updateDispositivos}>
                         </div>
                         <div class="flex flex-col my-2 mb-4 w-[10rem] mx-4">
                             <label for="" class="text-start w-full">Status</label>
