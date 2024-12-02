@@ -4,11 +4,11 @@
 	import { onMount } from 'svelte';
     import { getData } from '$lib/components/data';
     import { apiEndpoint } from '$lib/endpoint';
-    import { goto } from '$app/navigation';
+	import { onlyAuthenticated } from '$lib/stores/auth';
     initializeStores();
 	let tipos: any = [];
 
-
+    let errors: any = {};
     let selectedTipo = '';
     let id: any = '';
     let marca: any = '';
@@ -43,10 +43,7 @@
                 window.location.reload();
             } else {
                 let data = response.json();
-                getModalStore().trigger({
-                    type: 'alert',
-                    title: 'Error'
-                })
+                response.json().then(data => errors = data);
             }
         })
         
@@ -54,6 +51,7 @@
 
 
     onMount(async () => {
+        await onlyAuthenticated();
         tipos = await getData(apiEndpoint + 'tipos_dispositivos');
         tipo = tipos[0]?.id;
     })
@@ -66,28 +64,32 @@
         {#if showForm === false}
 		<header class="flex justify-between items-center">
 			<h1 class="h1 m-5 text-secondary-50 font-bold italic">Dispositivos</h1>
-			<button
+            <div class="flex flex-row">
+                <button
 				type="button"
 				class="btn btn-md variant-filled-primary border border-gray-500"
 				on:click={() => showForm = !showForm}
 			>
-				<span>Agregar</span>
+				<span>Agregar Dispositivos</span>
             </button>
+            <a
+                    class="mx-4 btn btn-md variant-filled-primary border border-gray-500"
+                    type="button"
+                    href="/tipos_dispositivos"
+                >
+                    <span>Tipos</span>
+                </a>
+            
+            </div>
+			
 		</header>
 		<!-- Divider -->
 		<!-- Component -->
-		<Datatable endpoint="dispositivos" fields={['id', 'marca','modelo', 'serial', 'imeis','status','tipo']} />
+		<Datatable endpoint="dispositivos" fields={['id', 'marca','modelo', 'serial', 'imeis','tipo']} />
 	
         {:else}
             <header class="flex justify-between items-center">
                 <h1 class="h1 m-5 text-secondary-50 font-bold italic">Agregar Dispositivos</h1>
-                <button
-                    type="button"
-                    class="btn btn-md variant-filled-primary border border-gray-500"
-                    on:click={() => showForm = !showForm}
-                >
-                    <span>Volver</span>
-                </button>
             </header>
             <!-- Divider -->
             <!-- Component -->
@@ -138,16 +140,31 @@
                         {/if}
                     </div>
                 </div>
-                <button
-                type="button"
-                class=" m-4 btn btn-md variant-filled-primary border border-gray-500"
-                on:click={handleSubmit}
-                >Guardar</button>
-                
-
-                
+                <div class="flex flex-row">
+                    <button
+                    type="button"
+                    class=" m-4 btn btn-md variant-filled-primary border border-gray-500"
+                    on:click={handleSubmit}
+                    >Guardar</button>
+                    <button
+                        type="button"
+                        class="m-4 btn btn-md variant-filled-primary border border-gray-500"
+                        on:click={() => showForm = !showForm}
+                    >
+                        <span>Volver</span>
+                    </button>
+                </div>
+                <div class="mx-4 flex flex-col w-[48.5%] bg-error-50">
+                    {#if Object.keys(errors).length > 0} 
+                        <ul class="w-full p-4">
+                            {#each Object.entries(errors) as error}
+                            <li class="text-error-500 capitalize">{error[0]}: {error[1]}</li>
+                            {/each}
+                        </ul> 
+                    {/if}
+                </div>  
             </form>
-
+            
         {/if}
     </div>
 	

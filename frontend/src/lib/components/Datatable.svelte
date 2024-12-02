@@ -12,6 +12,7 @@
 	import { getData } from '$lib/components/data';
 	import { apiEndpoint } from '$lib/endpoint';
 	import { ProgressRadial } from '@skeletonlabs/skeleton';
+	import { user } from '$lib/stores/auth';
 
 	//Import handler from SSD
 	import { DataHandler } from '@vincjo/datatables';
@@ -19,9 +20,15 @@
 	export let endpoint: string = '';
 	export let fields: string[] = [];
 
+	function formatDispositivos(data: any) {
+		return data.map((d: any) => {
+			return d.dispositivo.marca + ' ' + d.dispositivo.modelo;
+		}).join(', ');
+	}
+
 	let data: any = [{}];
 	const modalStore = getModalStore();
-
+	
 	function capitalize(s: string) {
 		if (typeof s !== 'string') {
 			return '';
@@ -59,11 +66,7 @@
 					rows = handler.getRows();
 				});
 			} else {
-				modalStore.close();
-				toastStore.trigger({
-					message: 'Failed to delete ' + row.name,
-					background: 'variant-filled-error'
-				});
+				window.location.reload();
 			}
 		});
 	}
@@ -76,7 +79,7 @@
 	const endpointName = endpoint.split('/').slice(-1)[0];
 	//Init data handler - CLIENT
 	let handler = new DataHandler(data, { rowsPerPage: 5 });
-	let rows = handler.getRows();
+	$: rows = handler.getRows();
 
 	onMount(async () => {
 		data = await getData(apiEndpoint + endpoint);
@@ -91,7 +94,7 @@
 		<Search {handler} />
 	</header>
 	<!-- Table -->
-	{#if $rows.length}
+	{#if data[0]?.id && data.length > 0 || data.length === 0}
 		<table class="table table-hover table-compact w-full table-auto">
 			<thead>
 				<tr>
@@ -100,9 +103,11 @@
 							>{field.replace(/_name/g, ' ').replace(/_/g, ' ')}</ThSort
 						>
 					{/each}
+					{#if !(endpoint === 'tecnicos' || $user.is_superuser)}
 					<td class="variant-filled-tertiary border border-gray-100 font-bold text-center"
 						>Acciones</td
 					>
+					{/if}
 				</tr>
 			</thead>
 			<tbody class="variant-filled-secondary">
@@ -112,10 +117,9 @@
 						<td class="texrt-justify indent-2 text-wrap border border-gray-500">
 							{#if typeof row[field] === 'object'}
 								{#if row[field]?.data}
-									{#each row[field]?.data as item}				
-										{item}{#if row[field].data.length > 1 && row[field].data.indexOf(item) !== row[field].data.length - 1},  
-										{/if}
-									{/each}
+									{row[field]?.data.join(', ')}
+								{:else if row[field]?.length > 1 && row[field]?.[0]?.dispositivo}
+									{formatDispositivos(row[field])}
 								{:else}					
 									{(row[field]?.nombre) ? row[field]?.nombre : row[field]?.nombres}
 								{/if}
@@ -124,6 +128,7 @@
 							{/if}
 						</td>
 						{/each}
+						{#if !(endpoint === 'tecnicos' || $user.is_superuser)}
 						<td class="flex flex-row gap-3 mx-2">
 							<button
 								on:click|stopPropagation={() => deleteRow(row)}
@@ -136,6 +141,7 @@
 								>Editar</button
 							>
 						</td>
+						{/if}
 					</tr>
 				{/each}
 			</tbody>

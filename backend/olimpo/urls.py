@@ -3,14 +3,18 @@ from rest_framework import routers # type: ignore
 from olimpo.views import *
 
 router = routers.DefaultRouter()
-router.register(r'users', UserViewSet)
-router.register(r'tecnicos', TecnicoViewSet)
+router.register(r'tecnicos', UserViewSet)
 router.register(r'clientes', ClienteViewSet)
 router.register(r'servicios', ServicioViewSet)
 router.register(r'tipos_dispositivos', TipoDispositivoViewSet)
 router.register(r'dispositivos', DispositivoViewSet)
 
+
 urlpatterns = [
     path('', include(router.urls)),
-    path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    path('login/', UserLoginView.as_view()),
+    path('logout/', UserLogoutView.as_view()),
+    path('user/', UserProfileView.as_view()),
+
 ]

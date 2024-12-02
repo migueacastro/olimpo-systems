@@ -19,8 +19,9 @@ let tipo: any = '';
 
 let imei1: any = '';
 let imei2: any = '';
-
+let errors: any = {};
 $: showForm = false;
+
 
 let handleSubmit = () => {
     const endpoint = apiEndpoint + 'dispositivos/' + data.id + '/';
@@ -32,7 +33,7 @@ let handleSubmit = () => {
     formData.append('imeis', JSON.stringify({data: [imei1, imei2]}));
 
     fetch(endpoint, {
-        method: 'PUT',
+        method: 'PATCH',
         body: formData,
     })
     .then(response => {
@@ -70,13 +71,6 @@ onMount(async () => {
 	<div class="mx-5 lg:m-32">
             <header class="flex justify-between items-center">
                 <h1 class="h1 m-5 text-secondary-50 font-bold italic">Editar Dispositivo</h1>
-                <button
-                    type="button"
-                    class="btn btn-md variant-filled-primary border border-gray-500"
-                    on:click={() => showForm = !showForm}
-                >
-                    <span>Volver</span>
-                </button>
             </header>
             <!-- Divider -->
             <!-- Component -->
@@ -127,12 +121,30 @@ onMount(async () => {
                         {/if}
                     </div>
                 </div>
-                <button
-                type="button"
-                class=" m-4 btn btn-md variant-filled-primary border border-gray-500"
-                on:click={handleSubmit}
-                >Guardar</button>
-                
+                <div class="flex flex-row">
+                    <button
+                    type="button"
+                    class=" m-4 btn btn-md variant-filled-primary border border-gray-500"
+                    on:click={handleSubmit}
+                    >Guardar</button>
+                    <a
+                            type="button"
+                            class="m-4 btn btn-md variant-filled-primary border border-gray-500"
+                            href="/dispositivos"
+                        >
+                            <span>Volver</span>
+                    </a>
+                </div>
+                <div class="mx-4 flex flex-col w-[48.5%] bg-error-50">
+                    {#if Object.keys(errors).length > 0} 
+                        <ul class="w-full p-4">
+                            {#each Object.entries(errors) as error}
+                            <li class="text-error-500 capitalize">{error[0]}: {error[1]}</li>
+                            {/each}
+                        </ul> 
+                    {/if}
+                </div>
+                    
 
                 
             </form>

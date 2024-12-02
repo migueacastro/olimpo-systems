@@ -10,6 +10,10 @@
 	import css from 'highlight.js/lib/languages/css';
 	import javascript from 'highlight.js/lib/languages/javascript';
 	import typescript from 'highlight.js/lib/languages/typescript';
+	import { authenticateUser, user, onlyAuthenticated, unauthenticateUser } from '$lib/stores/auth';
+	import { goto } from '$app/navigation';	
+	import { ProgressRadial } from '@skeletonlabs/skeleton';
+	import { page } from '$app/stores';
 
 	import { initializeStores } from '@skeletonlabs/skeleton';
 
@@ -22,7 +26,15 @@
 	// Floating UI for Popups
 	import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
 	import { storePopup } from '@skeletonlabs/skeleton';
+	import { onMount } from 'svelte';
 	storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
+	onMount(async () => {
+		await authenticateUser();
+		await onlyAuthenticated();
+	})
+	let url = $page.url.pathname;
+	let currentPage = url.split("/").pop();
+	console.log(currentPage);
 </script>
 
 <!-- App Shell -->
@@ -34,44 +46,49 @@
 				<strong class="text-xl uppercase font-bold italic">Olimpo Systems</strong>
 			</svelte:fragment>
 			<svelte:fragment slot="trail">
+				{#if $user.email !== null}
 				<a
 					class="btn btn-sm variant-fill-surface font-bold"
 					href="/servicios"
-					rel="noreferrer"
 				>
 					Servicios
 				</a>
 				<a
 					class="btn btn-sm variant-fill-surface font-bold"
 					href="/clientes"
-					rel="noreferrer"
 				>
 					Clientes
 				</a>
 				<a
 					class="btn btn-sm variant-fill-surface font-bold"
-					href="/tecnicos" 
-					rel="noreferrer"
-				>
-					Técnicos
-				</a>
-				<a
-					class="btn btn-sm variant-fill-surface font-bold"
 					href="/dispositivos" 
-					rel="noreferrer"
 				>
 					Dispositivos
 				</a>
+				{#if $user.is_superuser}
 				<a
-					class="btn btn-sm variant-filled-primary"
-					href="/"
-					rel="noreferrer"
+					class="btn btn-sm variant-fill-surface font-bold"
+					href="/tecnicos" 
 				>
-					Ajustes
+					Técnicos
 				</a>
+				{/if}
+				<button
+					class="btn btn-sm variant-fill-surface font-bold"
+					on:click={unauthenticateUser}
+				>
+					Cerrar Sesión
+				</button>
+			{/if}
 			</svelte:fragment>
 		</AppBar>
 	</svelte:fragment>
 	<!-- Page Route Content -->
+	{#if $user.email !== null || currentPage == 'login'}
 	<slot/>
+	{:else}
+	<div class="flex flex-row justify-center pt-[10rem]">
+		<ProgressRadial value={undefined} />
+	</div>
+	{/if}
 </AppShell>
