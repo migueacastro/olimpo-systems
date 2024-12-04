@@ -291,4 +291,4 @@ def service_to_pdf(request, id):
     buf.seek(0)
 
     
-    return FileResponse(buf, as_attachment=True, filename=f'servicio-{servicio['cliente']['cedula']}-{servicio['fecha_entrega']}.pdf')
+    return FileResponse(buf, as_attachment=True, filename=f'servicio-{servicio["cliente"]["cedula"]}-{servicio["fecha_entrega"]}.pdf')
