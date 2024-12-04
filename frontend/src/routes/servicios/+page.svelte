@@ -23,7 +23,7 @@
         costo: number | null;
         status: string | null;
 	}
-	let dispositivos: Array<DispositivoServicio> = [{dispositivo: {marca: '', modelo: '', serial: '', imeis: {data: ['', '']}, tipo: ''}, reparaciones: [{nombre: ''}], costo: 5.0, status: 'EN REPARACIÓN'}];
+	let dispositivos: Array<DispositivoServicio> = [{dispositivo: {marca: '', modelo: '', serial: '', imeis: {data: ['', '']}, tipo: ''}, reparaciones: [{nombre: 'Revisión'}], costo: 5.0, status: 'EN REPARACIÓN'}];
 	let selectedDispositivoIndex = -1;
     let selectedDispositivo: any = null;
     let selectedTecnico = '';
@@ -45,7 +45,7 @@
         total = dispositivos.reduce((acc, dispositivo: any) => acc + parseFloat(dispositivo.costo), 0);
     }
     function addDispositivo() {
-        dispositivos = [...dispositivos, {dispositivo: {marca: '', modelo: '', serial: '', imeis: {data: ['', '']}, tipo: ''}, reparaciones: [{nombre: ''}], costo: 5.0, status: 'EN REPARACIÓN'}];
+        dispositivos = [...dispositivos, {dispositivo: {marca: '', modelo: '', serial: '', imeis: {data: ['', '']}, tipo: ''}, reparaciones: [{nombre: 'Revisión'}], costo: 5.0, status: 'EN REPARACIÓN'}];
         updateDispositivos();
     }
     function removeDispositivo(dispositivo: any) {

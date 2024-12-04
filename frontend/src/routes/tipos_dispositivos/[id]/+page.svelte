@@ -15,7 +15,7 @@
     
     
     let handleSubmit = () => {
-        const endpoint = apiEndpoint + 'dispositivos/' + data.id + '/';
+        const endpoint = apiEndpoint + 'tipos_dispositivos/' + data.id + '/';
         let formData = new FormData();
         formData.append('nombre', nombre);
     

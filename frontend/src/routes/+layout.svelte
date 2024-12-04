@@ -24,6 +24,7 @@
 	storeHighlightJs.set(hljs);
 	initializeStores();
 	// Floating UI for Popups
+	let isLoading = true;
 	import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
 	import { storePopup } from '@skeletonlabs/skeleton';
 	import { onMount } from 'svelte';
@@ -31,7 +32,9 @@
 	onMount(async () => {
 		await authenticateUser();
 		await onlyAuthenticated();
+		isLoading = false;
 	})
+	
 	let url = $page.url.pathname;
 	let currentPage = url.split("/").pop();
 	console.log(currentPage);
@@ -89,7 +92,7 @@
 		</AppBar>
 	</svelte:fragment>
 	<!-- Page Route Content -->
-	{#if $user.email !== null || currentPage == 'login'}
+	{#if !isLoading}
 	<slot/>
 	{:else}
 	<div class="flex flex-row justify-center pt-[10rem]">

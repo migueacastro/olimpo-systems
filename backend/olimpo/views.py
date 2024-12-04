@@ -3,6 +3,7 @@ from rest_framework.authentication import TokenAuthentication
 from django.contrib.auth import authenticate
 from django.http import HttpResponse, FileResponse
 import io
+import logging
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -142,6 +143,24 @@ class UserViewSet(viewsets.ModelViewSet):
         self.object = self.get_object()
         self.object.activo = False
         self.object.save()
+    
+    def create(self, request, *args, **kwargs):
+        email = request.data.get('email')
+        if User.objects.filter(email=email).exists():
+            user = User.objects.get(email=email)
+            if user.activo:
+                return Response({'error': 'Ya existe un usuario con ese correo electrónico'}, status=400)
+            else:
+                user.activo = True
+                user.nombres = request.data.get('nombres')
+                user.apellidos = request.data.get('apellidos')
+                user.cedula = request.data.get('cedula')
+                user.telefono = request.data.get('telefono')
+                user.is_superuser = bool(request.data.get('is_superuser'))
+                user.save()
+                serializer = self.get_serializer(user)
+                return Response(serializer.data)
+        return super().create(request, *args, **kwargs)
 
 class ClienteViewSet(viewsets.ModelViewSet):
     queryset = Cliente.objects.filter(activo=True)

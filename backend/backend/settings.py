@@ -130,8 +130,14 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-CORS_ALLOW_ALL_ORIGINS = False
-CORS_ALLOW_HEADERS = [
+CORS_ALLOW_ALL_ORIGINS = DEBUG
+CORS_ALLOW_HEADERS = [    
+    "accept",
+    "authorization",
+    "content-type",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
     *default_headers,
     "ngrok-skip-browser-warning"
 ]
@@ -142,7 +148,11 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://127.0.0.1:8000",
     "http://localhost:5173",
+    "http://localhost:4173",
     "https://8461-190-120-249-134.ngrok-free.app",
+    "https://48b7-190-120-249-134.ngrok-free.app ",
+    "https://48b7-190-120-249-134.ngrok-free.app",
+    "http://190.120.249.134:4173",
 
 ]
 
