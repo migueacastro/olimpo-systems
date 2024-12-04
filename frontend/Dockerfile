@@ -7,8 +7,8 @@ WORKDIR /frontend
 COPY . .
 RUN npm install -g vite
 RUN npm install
-RUN npm run build
 
-EXPOSE 3000
 
-CMD ["npm", "run", "preview", "--", "--port", "4173"]
+EXPOSE 4173
+
+CMD ["npm", "run", "dev", "--", "--port", "4173"]
