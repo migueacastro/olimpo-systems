@@ -68,6 +68,18 @@
 				>
 					Dispositivos
 				</button>
+				<button
+					class="btn btn-sm variant-fill-surface font-bold"
+					on:click={() => goto('/modelos')}
+				>
+					Modelos
+				</button>
+				<button
+					class="btn btn-sm variant-fill-surface font-bold"
+					on:click={() => goto('/marcas')}
+				>
+					Marcas
+				</button>
 				{#if $user.is_superuser}
 				<button
 					class="btn btn-sm variant-fill-surface font-bold"
@@ -79,7 +91,7 @@
 				<p
 					class=" variant-fill-surface font-bold"
 				>
-					{$user.nombres + ' ' + $user.apellidos}
+					{$user.nombres + ' ' + $user.apellidos} | {($user.is_superuser) ? 'Administrador' : 'Tecnico'}
 				</p>
 				<button
 					class="btn btn-sm variant-fill-surface font-bold"

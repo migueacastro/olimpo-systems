@@ -1,11 +1,11 @@
 <script lang="ts">
-	import Datatable from '$lib/components/Datatable.svelte';
+
     import { initializeStores } from '@skeletonlabs/skeleton';
 	import { onMount } from 'svelte';
     import { getData } from '$lib/components/data';
     import { apiEndpoint } from '$lib/endpoint';
 	import { onlyAuthenticated } from '$lib/stores/auth';
-    import { tick } from 'svelte';
+
 
     initializeStores();
 	let tecnicos: any = [];
@@ -19,6 +19,7 @@
 		serial: string | null;
 		imeis: any;
 		tipo: string | null;
+        modelos_marca: any
     }
     interface DispositivoServicio {
 		dispositivo: any;
@@ -26,7 +27,7 @@
         costo: number | null;
         status: string | null;
 	}
-	let dispositivos: Array<DispositivoServicio> = [{dispositivo: {marca: '', modelo: '', serial: '', imeis: {data: ['', '']}, tipo: ''}, reparaciones: [{nombre: ''}], costo: 5.0, status: 'EN REPARACIÓN'}];
+	let dispositivos: Array<DispositivoServicio> = [{dispositivo: {modelos_marca: [], marca: '', modelo: '', serial: '', imeis: {data: ['', '']}, tipo: ''}, reparaciones: [{nombre: ''}], costo: 5.0, status: 'EN REPARACIÓN'}];
 	let selectedDispositivoIndex = -1;
     let selectedDispositivo: any = null;
     let selectedTecnico = '';
@@ -42,12 +43,19 @@
     let tipo: any = '1';
     let costototal: number = 0;
     let observaciones: any = '';
+    let marcas: any = [];
+    let modelos: any = [];
+    
+
+    function filterModelos(marca: any) {
+        return marcas.find((m: any) => m.id === marca)?.modelos || [];
+    }
     $: total = dispositivos.reduce((acc, dispositivo: any) => acc + parseFloat(dispositivo.costo), 0);
     function updateDispositivos() {
         total = dispositivos.reduce((acc, dispositivo: any) => acc + parseFloat(dispositivo.costo), 0);
     }
     function addDispositivo() {
-        dispositivos = [...dispositivos, {dispositivo: {marca: '', modelo: '', serial: '',  imeis: {data: ['', '']}, tipo: ''}, reparaciones: [{nombre: ''}], costo: 5.0, status: 'EN REPARACIÓN'}];
+        dispositivos = [...dispositivos, {dispositivo: {marca: '', modelo: '', serial: '',  imeis: {data: ['', '']}, tipo: ''}, reparaciones: [{nombre: 'Revisión'}], costo: 5.0, status: 'EN REPARACIÓN'}];
         updateDispositivos();
     }
     function removeDispositivo(dispositivo: any) {
@@ -72,6 +80,11 @@
     function selectDispositivo(dispositivo: any) {
         selectedDispositivo = dispositivo;
         selectedDispositivoIndex = dispositivos.findIndex(dispositivo => dispositivo === selectedDispositivo);
+    }
+
+    function parseDate(dateStr: string) { 
+        let [day, month, year] = dateStr.split('/'); 
+        return new Date(`${year}-${month}-${day}`).toISOString().split('T')[0]; 
     }
 
     function handleSubmit() {
@@ -111,6 +124,8 @@
 
     $: showForm = false;
     onMount(async () => {
+        marcas = await getData(apiEndpoint + 'marcas');
+        modelos = await getData(apiEndpoint + 'modelos');
         await onlyAuthenticated();
         tecnicos = await getData(apiEndpoint + 'tecnicos');
         clientes = await getData(apiEndpoint + 'clientes');
@@ -125,13 +140,14 @@
                 dispositivo.dispositivo.imeis = {data: ['', '']};
             }  
         });
+        console.log(marcas);
         nombres = servicio.cliente.nombres;
         apellidos = servicio.cliente.apellidos;
         cedula = servicio.cliente.cedula;
         telefono = servicio.cliente.telefono;
         tecnico = servicio.tecnico;
-        fecha_entrega = new Date(servicio.fecha_entrega).toISOString().split('T')[0]; // convert to ISO string and extract the date part only
-        fecha_salida = new Date(servicio.fecha_salida).toISOString().split('T')[0]; // convert to ISO string and extract the date part only
+        fecha_entrega = parseDate(servicio.fecha_entrega);
+        fecha_salida = parseDate(servicio.fecha_salida);
         observaciones = servicio.observaciones;
         cliente = servicio.cliente.id;
         
@@ -212,13 +228,21 @@
                             </tr>
                         </thead>
                         <tbody class="variant-filled-secondary">
-                            {#each dispositivos as dispositivoServicio}
+                            {#each dispositivos as dispositivoServicio, index (dispositivoServicio.dispositivo.serial)}
                                 <tr>
                                     <td class="border-gray-100 font-bold text-center">
-                                        <input type="text" bind:value={dispositivoServicio.dispositivo.marca} class="w-[10rem]">
+                                        <select name="marca" id="marca" bind:value={dispositivoServicio.dispositivo.marca} class="w-full">
+                                            {#each marcas as marca}
+                                                <option value={marca.id}>{marca.nombre}</option>
+                                            {/each}
+                                        </select>    
                                     </td>
                                     <td class="border-gray-100 font-bold text-center">
-                                        <input type="text" bind:value={dispositivoServicio.dispositivo.modelo}>
+                                        <select name="modelo" id="modelo" bind:value={dispositivoServicio.dispositivo.modelo} class="w-full">
+                                            {#each filterModelos(dispositivoServicio.dispositivo.marca) as modelo}
+                                                <option value={modelo.id}>{modelo.nombre}</option>
+                                            {/each}
+                                        </select>     
                                     </td>
                                     <td class="border-gray-100 font-bold text-center">
                                         <input type="text" bind:value={dispositivoServicio.dispositivo.serial}>

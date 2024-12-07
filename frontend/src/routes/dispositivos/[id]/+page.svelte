@@ -1,69 +1,74 @@
 <script lang="ts">
-import { getModalStore, initializeStores } from '@skeletonlabs/skeleton';
-import { onMount } from 'svelte';
-import { getData } from '$lib/components/data';
-import { apiEndpoint } from '$lib/endpoint';
-import { goto } from '$app/navigation';
+    import { getModalStore, initializeStores } from '@skeletonlabs/skeleton';
+    import { onMount } from 'svelte';
+    import { getData } from '$lib/components/data';
+    import { apiEndpoint } from '$lib/endpoint';
+    import { goto } from '$app/navigation';
 
-let tipos: any = [];
+    let tipos: any = [];
 
-export let data: any = {};
-let selectedTipo = '';
-let marca: any = '';
-let modelo: any = '';
+    export let data: any = {};
+    let selectedTipo = '';
+    let marca: any = '';
+    let modelo: any = '';
 
-let serial: any = '';
-let imeis: any = {};
-let status: any = '';
-let tipo: any = '';
+    let serial: any = '';
+    let imeis: any = {};
+    let status: any = '';
+    let tipo: any = '';
 
-let imei1: any = '';
-let imei2: any = '';
-let errors: any = {};
-$: showForm = false;
+    let imei1: any = '';
+    let imei2: any = '';
+    let errors: any = {};
+    $: showForm = false;
+    let marcas: any = [];
+    let modelos: any = [];
+    function filterModelos(marca: any) {
+        return marcas.find((m: any) => m.id === marca)?.modelos || [];
+    }
+    let handleSubmit = () => {
+        const endpoint = apiEndpoint + 'dispositivos/' + data.id + '/';
+        let formData = new FormData();
+        formData.append('marca', marca);
+        formData.append('modelo', modelo);
+        formData.append('serial', serial);
+        formData.append('tipo', tipos.find((t: any) => t.id === tipo).id);
+        formData.append('imeis', JSON.stringify({data: [imei1, imei2]}));
+
+        fetch(endpoint, {
+            method: 'PATCH',
+            body: formData,
+        })
+        .then(response => {
+            if (response.ok) {
+                showForm = false;
+                window.location.reload();
+            } else {
+                let data = response.json();
+                getModalStore().trigger({
+                    type: 'alert',
+                    title: 'Error'
+                })
+            }
+        })
+        
+    };
 
 
-let handleSubmit = () => {
-    const endpoint = apiEndpoint + 'dispositivos/' + data.id + '/';
-    let formData = new FormData();
-    formData.append('marca', marca);
-    formData.append('modelo', modelo);
-    formData.append('serial', serial);
-    formData.append('tipo', tipos.find((t: any) => t.id === tipo).id);
-    formData.append('imeis', JSON.stringify({data: [imei1, imei2]}));
+    onMount(async () => {
+        let dispositivo = await getData(apiEndpoint + 'dispositivos/' + data.id);
+        marcas = await getData(apiEndpoint + 'marcas');
+        modelos = await getData(apiEndpoint + 'modelos');
+        marca = dispositivo?.marca;
+        modelo = dispositivo?.modelo;
+        serial = dispositivo?.serial;
+        imei1 = dispositivo?.imeis?.data[0];
+        imei2 = dispositivo?.imeis?.data[1];
 
-    fetch(endpoint, {
-        method: 'PATCH',
-        body: formData,
+        tipos = await getData(apiEndpoint + 'tipos_dispositivos');
+        tipo = dispositivo?.tipo;
+
     })
-    .then(response => {
-        if (response.ok) {
-            showForm = false;
-            window.location.reload();
-        } else {
-            let data = response.json();
-            getModalStore().trigger({
-                type: 'alert',
-                title: 'Error'
-            })
-        }
-    })
-    
-};
-
-
-onMount(async () => {
-    let dispositivo = await getData(apiEndpoint + 'dispositivos/' + data.id);
-    marca = dispositivo?.marca;
-    modelo = dispositivo?.modelo;
-    serial = dispositivo?.serial;
-    imei1 = dispositivo?.imeis?.data[0];
-    imei2 = dispositivo?.imeis?.data[1];
-
-    tipos = await getData(apiEndpoint + 'tipos_dispositivos');
-    tipo = dispositivo?.tipo;
-
-})
 </script>
 <div class="space-y-10 h-full">
    
@@ -81,11 +86,19 @@ onMount(async () => {
                         
                         <div class="mx-4  w-1/3">
                             <label for="marca" class="text-secondary-100 font-bold">Marca</label>
-                            <input type="text" name="marca" class="w-full" bind:value={marca}>
+                            <select name="marca" id="marca" bind:value={marca} class="w-full">
+                                {#each marcas as marca}
+                                    <option value={marca.id}>{marca.nombre}</option>
+                                {/each}
+                            </select>
                         </div>
                         <div class="mx-4  w-1/3">
                             <label for="modelo" class="text-secondary-100 font-bold">Modelo</label>
-                            <input type="text" name="modelo" class="w-full" bind:value={modelo}>
+                            <select name="modelo" id="modelo" bind:value={modelo} class="w-full">
+                                {#each filterModelos(marca) as modelo}
+                                    <option value={modelo.id}>{modelo.nombre}</option>
+                                {/each}
+                            </select>
                         </div>
                     </div>
                     <div class="flex flex-row w-full">

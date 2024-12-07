@@ -44,14 +44,15 @@ class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(max_length=100, style={'input_type': 'password'}, write_only=True)
     confirmPassword = serializers.CharField(max_length=100, style={'input_type': 'password'}, write_only=True)
     dispositivos_reparados = serializers.SerializerMethodField(read_only=True)
+    rol = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = get_user_model()
-        fields = ['id', 'nombres','apellidos','cedula','telefono', 'email','is_superuser', 'dispositivos_reparados', 'password', 'confirmPassword']
+        fields = ['id', 'nombres','apellidos','cedula','telefono', 'email','is_superuser', 'dispositivos_reparados', 'password', 'confirmPassword', 'rol']
 
     def create(self, validated_data):
         # Create the user
         user_password = validated_data.get('password', None)
-        user_instance = self.Meta.model(email = validated_data.get('email'), nombres = validated_data.get('nombres'))
+        user_instance = self.Meta.model(email = validated_data.get('email'), nombres = validated_data.get('nombres'), apellidos = validated_data.get('apellidos'), cedula = validated_data.get('cedula'), telefono = validated_data.get('telefono'))
         user_instance.set_password(user_password)
         user_instance.is_staff = validated_data.get('is_staff', False)
         user_instance.is_superuser = validated_data.get('is_superuser', False)
@@ -76,6 +77,8 @@ class UserSerializer(serializers.ModelSerializer):
             dispositivoservicio_count=Count('dispositivoservicio')
         ).count()
 
+    def get_rol(self, obj):
+        return "Administrador" if obj.is_superuser else "Tecnico"
 
 class ResetPasswordEmailSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -111,6 +114,7 @@ class SetNewPasswordSerializer(serializers.Serializer):
         except Exception as e:
             raise AuthenticationFailed('The reset link is invalid', 401)
 
+
 class ClienteSerializer(serializers.ModelSerializer):
     servicios = serializers.SerializerMethodField(read_only=True)
     class Meta:
@@ -125,17 +129,57 @@ class ClienteSerializer(serializers.ModelSerializer):
         return Servicio.objects.filter(cliente=obj.id).all().values()
 
     
+class MarcaSerializer(serializers.ModelSerializer):
+    modelos = serializers.SerializerMethodField(read_only=True)
+    class Meta:
+        model = Marca
+        fields = ['id', 'nombre', 'modelos']
+
+    def get_modelos(self, obj):
+        return obj.modelo_set.all().values()
+
+
+class ModeloSerializer(serializers.ModelSerializer):
+    nombre_marca = serializers.SerializerMethodField(read_only=True)
+    class Meta:
+        model = Modelo
+        fields = ['id', 'marca', 'nombre', 'nombre_marca']
+
+    def get_nombre_marca(self, obj):
+        return obj.marca.nombre
 
 class TipoDispositivoSerializer(serializers.ModelSerializer):
     class Meta:
         model = TipoDispositivo
         fields = ['id', 'nombre']
 
-class DispositivoSerializer(serializers.ModelSerializer):
+
+class DispositivoSerializer(WritableNestedModelSerializer):
+    marca = serializers.SerializerMethodField(read_only=True)
+    modelos_marca = serializers.SerializerMethodField(read_only=True)
+    nombre_marca = serializers.SerializerMethodField(read_only=True)
+    nombre_modelo = serializers.SerializerMethodField(read_only=True)
+    nombre_tipo = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = Dispositivo
-        fields = ['id', 'marca', 'modelo', 'serial', 'imeis', 'tipo']
+        fields = ['id', 'marca', 'modelo', 'serial', 'imeis', 'tipo', 'modelos_marca', 'nombre_marca', 'nombre_modelo', 'nombre_tipo']
 
+    def get_marca(self, obj):
+        return obj.modelo.marca.id
+    
+    def get_modelos_marca(self, obj):
+        return obj.modelo.marca.modelo_set.all().values()
+
+    def get_nombre_marca(self, obj):
+        return obj.modelo.marca.nombre
+
+    def get_nombre_modelo(self, obj):
+        return obj.modelo.nombre
+    
+    def get_nombre_tipo(self, obj):
+        return obj.tipo.nombre
+    
 
 class ReparacionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -164,9 +208,11 @@ class ServicioSerializer(WritableNestedModelSerializer):
     nombre_cliente = serializers.SerializerMethodField(read_only=True)
     dispositivos = DispositivoServicioSerializer(many=True, source='dispositivoservicio_set', partial=True)
     status = serializers.SerializerMethodField(read_only=True)
+    fecha_salida = serializers.DateField(format='%d/%m/%Y')
+    fecha_entrega = serializers.DateField(format='%d/%m/%Y')
     class Meta:
         model = Servicio
-        fields = ['id','fecha_salida', 'fecha_entrega', 'nombre_tecnico',  'nombre_cliente', 'cedula', 'dispositivos', 'observaciones', 'costo_total', 'status', 'tecnico', 'cliente']
+        fields = ['id','fecha_entrega','fecha_salida', 'nombre_tecnico',  'nombre_cliente', 'cedula', 'dispositivos', 'observaciones', 'costo_total', 'status', 'tecnico', 'cliente']
     
     def get_nombre_tecnico(self, obj):
         return obj.tecnico.nombres + ' ' + obj.tecnico.apellidos

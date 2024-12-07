@@ -6,13 +6,13 @@
     import { getModalStore } from '@skeletonlabs/skeleton';
 	import { onMount } from 'svelte';
 	import { onlyAuthenticated } from '$lib/stores/auth';
-	
+	import { getData } from '$lib/components/data';
 	let id: any = '';
 	let cedula: any = '';
 	let nombres: any = '';
 	let apellidos: any = '';
 	let telefono: any = '';
-
+    let clientes: any = [];
 	$: showForm = false;
     let errors: any = {};
 
@@ -39,6 +39,8 @@
     }
     onMount(async () => {
         await onlyAuthenticated();
+        clientes = await getData(apiEndpoint + 'clientes');
+
     })
 </script>
 
@@ -47,7 +49,7 @@
 	<div class="mx-5 lg:m-32">
         {#if showForm === false}
 		<header class="flex justify-between items-center">
-			<h1 class="h1 m-5 text-secondary-50 font-bold italic">Clientes</h1>
+			<h1 class="h1 m-5 text-secondary-50 font-bold italic">Clientes: {clientes?.length}</h1>
 			<button
                     on:click={() => showForm = !showForm}
 					type="button"

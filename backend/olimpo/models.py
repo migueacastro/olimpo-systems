@@ -102,6 +102,27 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.nombres
     
 
+class Marca(models.Model):
+    nombre = models.CharField(max_length=50, blank=False, null=False)
+    activo = models.BooleanField(default=True)
+
+    def __unicode__(self):
+        return self.nombre
+    
+    def __str__(self):
+        return self.nombre
+    
+class Modelo(models.Model):
+    marca = models.ForeignKey(Marca, on_delete=models.CASCADE)
+    nombre = models.CharField(max_length=50, blank=False, null=False)
+    activo = models.BooleanField(default=True)
+
+    def __unicode__(self):
+        return self.nombre
+    
+    def __str__(self):
+        return self.nombre
+
 class Cliente(models.Model):
     cedula = models.CharField(max_length=16, blank=False, null=False)
     nombres = models.CharField(max_length=50, blank=False, null=False)
@@ -128,11 +149,16 @@ class Dispositivo(models.Model):
     tipo = models.ForeignKey(
         TipoDispositivo, on_delete=models.CASCADE, related_name="dispositivos"
     )
-    marca = models.CharField(max_length=50, blank=True, null=True)
-    modelo = models.CharField(max_length=50, blank=True, null=True)
+    modelo = models.ForeignKey(Modelo, on_delete=models.CASCADE, related_name="dispositivos")
     serial = models.CharField(max_length=50, blank=True, null=True)
     imeis = models.JSONField(null=True, blank=True)
     activo = models.BooleanField(default=True)
+
+    def __unicode__(self):
+        return self.serial
+    
+    def __str__(self):
+        return self.modelo.marca.nombre + ' ' + self.modelo.nombre
 
 
 class Servicio(models.Model):

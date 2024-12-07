@@ -11,11 +11,12 @@
     let tiposDispositivos: any = [];
 
     interface Dispositivo {
-        marca: string | null;
-		modelo: string | null;
+        marca: any | null;
+		modelo: any | null;
 		serial: string | null;
 		imeis: any;
 		tipo: string | null;
+        modelos_marca: any;
     }
     interface DispositivoServicio {
 		dispositivo: any;
@@ -23,7 +24,7 @@
         costo: number | null;
         status: string | null;
 	}
-	let dispositivos: Array<DispositivoServicio> = [{dispositivo: {marca: '', modelo: '', serial: '', imeis: {data: ['', '']}, tipo: ''}, reparaciones: [{nombre: 'Revisión'}], costo: 5.0, status: 'EN REPARACIÓN'}];
+	let dispositivos: Array<DispositivoServicio> = [{dispositivo: {modelos_marca: [], marca: '', modelo: '', serial: '', imeis: {data: ['', '']}, tipo: ''}, reparaciones: [{nombre: 'Revisión'}], costo: 5.0, status: 'EN REPARACIÓN'}];
 	let selectedDispositivoIndex = -1;
     let selectedDispositivo: any = null;
     let selectedTecnico = '';
@@ -37,10 +38,17 @@
     let cliente: any = '';
     let tecnico: any = ''; 
     let tipo: any = '1';
+    let marcas: any = [];
+    let servicios = [];
+
+    let modelos: any = [];
+
     let observaciones: any = '';
     let total = dispositivos.reduce((acc, dispositivo: any) => acc + parseFloat(dispositivo.costo), 0);
 
-
+    function filterModelos(marca: any) {
+        return marcas.find((m: any) => m.id === marca)?.modelos || [];
+    }
     function updateDispositivos() {
         total = dispositivos.reduce((acc, dispositivo: any) => acc + parseFloat(dispositivo.costo), 0);
     }
@@ -116,6 +124,11 @@
         }
     }
 
+    function parseDate(dateStr: string) { 
+        let [day, month, year] = dateStr.split('/'); 
+        return new Date(`${year}-${month}-${day}`).toISOString().split('T')[0]; 
+    }
+
     $: showForm = false;
     onMount(async () => {
         await onlyAuthenticated();
@@ -124,6 +137,11 @@
         tiposDispositivos = await getData(apiEndpoint + 'tipos_dispositivos');
         tipo = tiposDispositivos[0]?.id;
         tecnico = tecnicos[0]?.id;
+        marcas = await getData(apiEndpoint + 'marcas');
+        modelos = await getData(apiEndpoint + 'modelos');
+        servicios = await getData(apiEndpoint + 'servicios');
+        
+        
     })
 </script>
 
@@ -134,7 +152,7 @@
         {#if showForm === false}
         <!-- PARTE 1 -->
 		<header class="flex justify-between items-center">
-			<h1 class="h1 m-5 text-secondary-50 font-bold italic">Servicios</h1>
+			<h1 class="h1 m-5 text-secondary-50 font-bold italic">Servicios: {servicios?.length}</h1>
 			<button
 				type="button"
 				class="btn btn-md variant-filled-primary border border-gray-500"
@@ -143,7 +161,7 @@
 				<span>Agregar</span>
             </button>
 		</header>
-		<Datatable endpoint="servicios" fields={['id', 'fecha_salida','fecha_entrega', 'nombre_tecnico', 'nombre_cliente', 'cedula', 'dispositivos', 'costo_total', 'status']} />
+		<Datatable endpoint="servicios" fields={['id', 'fecha_entrega', 'fecha_salida', 'nombre_tecnico', 'nombre_cliente', 'cedula', 'dispositivos', 'costo_total', 'status']} />
         <!-- FIN PARTE 1 -->
         {:else if !selectedDispositivo}
         <!-- PARTE 2-->
@@ -215,13 +233,22 @@
                             </tr>
                         </thead>
                         <tbody class="variant-filled-secondary">
-                            {#each dispositivos as dispositivoServicio}
+                            {#each dispositivos as dispositivoServicio, index (dispositivoServicio.dispositivo.serial)}
+                                
                                 <tr>
                                     <td class="border-gray-100 font-bold text-center">
-                                        <input type="text" bind:value={dispositivoServicio.dispositivo.marca} class="w-[10rem]">
+                                        <select name="marca" id="marca" bind:value={dispositivoServicio.dispositivo.marca} class="w-full">
+                                            {#each marcas as marca}
+                                                <option value={marca.id}>{marca.nombre}</option>
+                                            {/each}
+                                        </select>     
                                     </td>
                                     <td class="border-gray-100 font-bold text-center">
-                                        <input type="text" bind:value={dispositivoServicio.dispositivo.modelo}>
+                                        <select name="modelo" id="modelo" bind:value={dispositivoServicio.dispositivo.modelo} class="w-full">
+                                            {#each filterModelos(dispositivoServicio.dispositivo.marca) as modelo}
+                                                <option value={modelo.id}>{modelo.nombre}</option>
+                                            {/each}
+                                        </select>     
                                     </td>
                                     <td class="border-gray-100 font-bold text-center">
                                         <input type="text" bind:value={dispositivoServicio.dispositivo.serial}>

@@ -6,6 +6,7 @@
 	import { onMount } from 'svelte';
 	import { onlyAuthenticated } from '$lib/stores/auth';
 	import { user } from '$lib/stores/auth';
+    import { getData } from '$lib/components/data';
 	let id: any = '';
 	let cedula: any = '';
 	let nombres: any = '';
@@ -15,6 +16,7 @@
     let password: any = '';
     let confirmPassword: any = '';
     let is_superuser: boolean;
+    let tecnicos: any = [];
 
 	$: showForm = false;
     let errors: any = {};
@@ -45,6 +47,7 @@
     }
     onMount(async () => {
         await onlyAuthenticated();
+        tecnicos = await getData(apiEndpoint + 'tecnicos');
     })
 </script>
 
@@ -53,7 +56,7 @@
 	<div class="mx-5 lg:m-32">
         {#if showForm === false}
 		<header class="flex justify-between items-center">
-			<h1 class="h1 m-5 text-secondary-50 font-bold italic">Técnicos</h1>
+			<h1 class="h1 m-5 text-secondary-50 font-bold italic">Técnicos: {tecnicos?.length}</h1>
             {#if $user.is_superuser}
 			<button
                     on:click={() => showForm = !showForm}
@@ -66,7 +69,7 @@
             {/if}
 		</header>
 		<!-- Component -->
-		<Datatable endpoint="tecnicos" fields={['id', 'cedula', 'email', 'nombres', 'apellidos', 'telefono', 'dispositivos_reparados']} />
+		<Datatable endpoint="tecnicos" fields={['id', 'cedula', 'email', 'nombres', 'apellidos', 'telefono', 'dispositivos_reparados', 'rol']} />
         {:else}
         <header class="flex justify-between items-center">
             <h1 class="h1 m-5 text-secondary-50 font-bold italic">Agregar Técnicos</h1>

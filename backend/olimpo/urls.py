@@ -8,7 +8,8 @@ router.register(r'clientes', ClienteViewSet)
 router.register(r'servicios', ServicioViewSet)
 router.register(r'tipos_dispositivos', TipoDispositivoViewSet)
 router.register(r'dispositivos', DispositivoViewSet)
-
+router.register(r'marcas', MarcaViewSet)
+router.register(r'modelos', ModeloViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

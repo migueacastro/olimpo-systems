@@ -190,6 +190,16 @@ class ServicioViewSet(viewsets.ModelViewSet):
         self.object.save()
 
     
+class MarcaViewSet(viewsets.ModelViewSet):
+    queryset = Marca.objects.filter(activo=True)
+    serializer_class = MarcaSerializer
+
+
+class ModeloViewSet(viewsets.ModelViewSet):
+    queryset = Modelo.objects.filter(activo=True)
+    serializer_class = ModeloSerializer
+
+
 class TipoDispositivoViewSet(viewsets.ModelViewSet):
     queryset = TipoDispositivo.objects.filter(activo=True)
     serializer_class = TipoDispositivoSerializer
@@ -236,12 +246,14 @@ def service_to_pdf(request, id):
     data = [headers]
 
     for n, item in enumerate(servicio['dispositivos'], 1):
+        marca = MarcaSerializer(instance=Marca.objects.get(id=item['dispositivo']['marca'])).data
+        modelo = ModeloSerializer(instance=Modelo.objects.get(id=item['dispositivo']['modelo'])).data
         reparaciones_list = ['• ' + str(r['nombre']) for r in item['reparaciones']]
         reparaciones_paragraph = Paragraph('<br/>'.join(reparaciones_list), bullet_style)
         row = [
             n,
-            Paragraph(str(item['dispositivo']['marca'])),
-            Paragraph(str(item['dispositivo']['modelo'])),
+            Paragraph(str(marca['nombre'])),
+            Paragraph(str(modelo['nombre'])),
             Paragraph(str(item['dispositivo']['serial'])),
             Paragraph(str(', '.join(item['dispositivo']['imeis']['data']) if item['dispositivo']['imeis']['data'] != ["",""] else "No")),
             reparaciones_paragraph,

@@ -7,13 +7,13 @@
 	import { onlyAuthenticated } from '$lib/stores/auth';
 
     let errors: any = {};
-    let tipos: any = [];
     let nombre: any = '';
+    let marcas: any = [];
 
     $: showForm = false;
 
     let handleSubmit = () => {
-        const endpoint = apiEndpoint + 'tipos_dispositivos/' ;
+        const endpoint = apiEndpoint + 'marcas/' ;
         let data = new FormData();
         data.append('nombre', nombre);
 
@@ -36,7 +36,7 @@
 
     onMount(async () => {
         await onlyAuthenticated();
-        tipos = await getData(apiEndpoint + 'tipos_dispositivos');
+        marcas = await getData(apiEndpoint + 'marcas');
     })
 </script>
 
@@ -46,7 +46,7 @@
 	<div class="mx-5 lg:m-32">
         {#if showForm === false}
 		<header class="flex justify-between items-center">
-			<h1 class="h1 m-5 text-secondary-50 font-bold italic">Tipos Dispositivos: {tipos?.length}</h1>
+			<h1 class="h1 m-5 text-secondary-50 font-bold italic">Marcas: {marcas?.length}</h1>
 			<button
 				type="button"
 				class="btn btn-md variant-filled-primary border border-gray-500"
@@ -58,11 +58,11 @@
 		</header>
 		<!-- Divider -->
 		<!-- Component -->
-		<Datatable endpoint="tipos_dispositivos" fields={['id', 'nombre']} />
+		<Datatable endpoint="marcas" fields={['id', 'nombre']} />
 	
         {:else}
             <header class="flex justify-between items-center">
-                <h1 class="h1 m-5 text-secondary-50 font-bold italic">Agregar Tipos Dispositivos</h1>
+                <h1 class="h1 m-5 text-secondary-50 font-bold italic">Agregar Marca</h1>
                 <button
                     type="button"
                     class="btn btn-md variant-filled-primary border border-gray-500"
