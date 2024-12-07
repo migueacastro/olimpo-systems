@@ -61,6 +61,14 @@
         updateDispositivos();
     }
 
+    function findMarcaById(id: any) {
+        return marcas.find((m: any) => m.id === id);
+    }
+
+    function findModeloById(id: any) {
+        return modelos.find((m: any) => m.id === id);
+    }
+
     function removeReparacion(reparacion: any) {
         selectedDispositivoIndex = dispositivos.findIndex(dispositivo => dispositivo === selectedDispositivo);
         dispositivos[selectedDispositivoIndex].reparaciones = dispositivos[selectedDispositivoIndex]?.reparaciones.filter((r: any) => r !== reparacion);
@@ -311,7 +319,7 @@
         {:else}
             <header class="flex justify-between items-center">
                 {#if selectedDispositivo.marca !== ''} 
-                <h1 class="h1 m-5 text-secondary-50 font-bold italic">Reparaciones de {selectedDispositivo?.dispositivo.marca} {selectedDispositivo?.dispositivo.modelo}</h1>
+                <h1 class="h1 m-5 text-secondary-50 font-bold italic">Reparaciones de {findMarcaById(selectedDispositivo?.dispositivo.marca).nombre} {findModeloById(selectedDispositivo?.dispositivo.modelo).nombre}</h1>
                 {:else}
                 <h1 class="h1 m-5 text-secondary-50 font-bold italic">Reparaciones</h1>
                 {/if}

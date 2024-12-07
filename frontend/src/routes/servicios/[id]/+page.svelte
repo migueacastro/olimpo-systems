@@ -87,6 +87,14 @@
         return new Date(`${year}-${month}-${day}`).toISOString().split('T')[0]; 
     }
 
+    function findMarcaById(id: any) {
+        return marcas.find((m: any) => m.id === id);
+    }
+
+    function findModeloById(id: any) {
+        return modelos.find((m: any) => m.id === id);
+    }
+
     function handleSubmit() {
         const endpoint = apiEndpoint + 'servicios' + '/' + data.id + '/';
         let cliente = {
@@ -311,7 +319,7 @@
         {:else}
             <header class="flex justify-between items-center">
                 {#if selectedDispositivo.marca !== ''} 
-                <h1 class="h1 m-5 text-secondary-50 font-bold italic">Reparaciones de {selectedDispositivo?.dispositivo.marca} {selectedDispositivo?.dispositivo.modelo}</h1>
+                <h1 class="h1 m-5 text-secondary-50 font-bold italic">Reparaciones de {findMarcaById(selectedDispositivo?.dispositivo.marca).nombre} {findModeloById(selectedDispositivo?.dispositivo.modelo).nombre}</h1>
                 {:else}
                 <h1 class="h1 m-5 text-secondary-50 font-bold italic">Reparaciones</h1>
                 {/if}
