@@ -85,7 +85,7 @@ onMount(async () => {
                     <a
                             type="button"
                             class="m-4 btn btn-md variant-filled-primary border border-gray-500"
-                            href="/dispositivos"
+                            href="/modelos"
                         >
                             <span>Volver</span>
                     </a>
