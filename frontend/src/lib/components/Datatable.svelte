@@ -97,24 +97,6 @@
 	const endpointName = endpoint.split('/').slice(-1)[0];
 
 	let handler = new DataHandler(data, { rowsPerPage: 5 });
-	/*
-	const fechaEntregaFilter = handler.createAdvancedFilter('fecha_entrega'); 
-	const fechaSalidaFilter = handler.createAdvancedFilter('fecha_salida'); 
-	const selectedFechaEntrega = fechaEntregaFilter.getSelected(); 
-	const selectedFechaSalida = fechaSalidaFilter.getSelected();
-	function handleDateFilter() { 
-		const desdeTimestamp = desde ? new Date(desde).getTime() : new Date('1970-01-01').getTime(); 
-		const hastaTimestamp = hasta ? new Date(hasta).getTime() : new Date('9999-12-31').getTime(); 
-		if (entrega) { 
-			fechaEntregaFilter.set([desdeTimestamp, hastaTimestamp], check.isBetween); 
-		} else if (salida) { 
-			fechaSalidaFilter.set([desdeTimestamp,hastaTimestamp], check.isBetween); 
-		} else { 
-			fechaSalidaFilter.clear(); // Clear filter if not applied 
-			fechaEntregaFilter.clear();
-		}
-	} 
-	*/
 	const fechaEntregaFilter = handler.createAdvancedFilter('fecha_entrega'); 
 	const fechaSalidaFilter = handler.createAdvancedFilter('fecha_salida');
 	function convertDMYToTimestamp(dmy: string): number { 
@@ -147,6 +129,7 @@
 	$: handleDateFilter();
 	$: rows = handler.getRows();
 
+	$: sumaCosto = handler.createCalculation('costo_total').sum();
 	onMount(async () => {
 		if (endpoint === 'servicios') {
 			tecnicos = await getData(apiEndpoint + 'tecnicos');
@@ -156,7 +139,7 @@
 		data = await getData(apiEndpoint + endpoint);
 		handler = new DataHandler(data, { rowsPerPage: 5 });
 		rows = handler.getRows();
-		
+		console.log(`Suma Costo: ${sumaCosto}`);
 	});
 </script>
 
@@ -231,7 +214,7 @@
 				{#each $rows as row}
 					<tr>
 						{#each fields as field}
-						<td class="texrt-justify indent-2 text-wrap border border-gray-500">
+						<td class="text-justify indent-2 text-wrap border border-gray-500">
 							{#if typeof row[field] === 'object'}
 								{#if row[field]?.data}
 									{#if  row[field].data[0] === "" && row[field].data[1] === ""}
@@ -268,6 +251,22 @@
 					</tr>
 				{/each}
 			</tbody>
+			{#if endpoint === 'servicios'}
+			<tfoot>
+				<tr>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td class="text-justify indent-2 text-wrap border border-gray-500">{$sumaCosto} $</td>
+					<td></td>
+					<td></td>
+				</tr>
+			</tfoot>
+			{/if}
 		</table>
 		<!-- Footer -->
 		<footer class="flex justify-between">

@@ -224,7 +224,7 @@ class ServicioSerializer(WritableNestedModelSerializer):
         return obj.cliente.cedula
     
     def get_costo_total(self, obj):
-        return str(sum(dispositivo.costo for dispositivo in obj.dispositivoservicio_set.all())) + "$"
+        return sum(dispositivo.costo for dispositivo in obj.dispositivoservicio_set.all()) 
 
     def get_nombre_dispositivo(self, obj):
         return obj.dispositivo.marca + obj.dispositivo.modelo
