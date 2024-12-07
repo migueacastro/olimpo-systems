@@ -41,8 +41,7 @@
 	let status : any;
 	let desde: Date = new Date();
 	let hasta: Date = new Date();
-	let salida: boolean = false;
-	let entrega: boolean = false;
+	
 	const modalStore = getModalStore();
 	
 	function capitalize(s: string) {
@@ -108,8 +107,23 @@
 		const { desde, hasta } = filter; 
 		return entryTimestamp >= desde && entryTimestamp <= hasta; 
 	} 
-
+	let filterType: string = '';
 	 // Function to handle date filter change 
+	let salida: boolean = false;
+	let entrega: boolean = false;
+	function handleFilterChange() { 
+		handler.clearFilters(); 
+		if (filterType === 'Entrega') { 
+			entrega = true;
+			salida = false;
+			handleDateFilter(); 
+		} 
+		if (filterType === 'Salida') { 
+			entrega = false;
+			salida = true;
+			handleDateFilter(); 
+		} 
+	} 
 	function handleDateFilter() { 
 		const desdeTimestamp = desde ? new Date(desde).getTime() : new Date('1970-01-01').getTime(); 
 		const hastaTimestamp = hasta ? new Date(hasta).getTime() : new Date('9999-12-31').getTime(); 
@@ -165,10 +179,10 @@
 		</div>	
 		<div class="flex flex-col">
 			<label for="hasta" class="text-white font-bold">Fechas de</label>
-			<div class="flex flex-row align-bottom p-2">
-				<p class="mx-2 text-white font-bold"><input type="checkbox" name="" id="" class="mx-1" bind:checked={entrega} on:change={handleDateFilter}>Entrega</p>
-				<p class="mx-2 text-white font-bold"><input type="checkbox" name="" id="" class="mx-1" bind:checked={salida} on:change={handleDateFilter}>Salida</p>
-			</div>
+			<select name="tecnico" id="" bind:value={filterType} on:change={handleFilterChange}>
+				<option value="Entrega">Entrega</option>
+				<option value="Salida">Salida</option>
+			</select>
 		</div>	
 		<div class="flex flex-row mx-2">
 			<div class="flex flex-col">
@@ -251,7 +265,7 @@
 					</tr>
 				{/each}
 			</tbody>
-			{#if endpoint === 'servicios'}
+			{#if endpoint === 'servicios' && $rows.length > 0}
 			<tfoot>
 				<tr>
 					<td></td>
