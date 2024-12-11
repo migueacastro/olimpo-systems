@@ -58,7 +58,9 @@ export const onlyAdmin = async (userData: any) => {
     }
 }
 
-
+function deleteCookie(name: any) { 
+    document.cookie = name + '=; Max-Age=0; path=/; domain=' + window.location.hostname; 
+}
 export const authenticateUser = async () => {
     try {
         const response = await fetch(`${apiEndpoint}user`, {
@@ -90,6 +92,7 @@ export const unauthenticateUser = async () => {
     });
     if (response.ok) {
         user.set({nombres: null, apellidos: null, cedula: null, email: null, is_staff: false, is_superuser: false})
+        document.cookie = 'access_token=; Max-Age=0; path=/; domain=127.0.0.1;';
         authenticated.set(false);
         goto('/login');
         

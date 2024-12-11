@@ -1,6 +1,7 @@
 from rest_framework import viewsets, permissions, authentication
 from rest_framework.authentication import TokenAuthentication
 from django.contrib.auth import authenticate
+
 from django.http import HttpResponse, FileResponse
 import io
 import logging
@@ -85,7 +86,7 @@ class UserLoginView(APIView):
             response = Response()
 
             # VERY IMPORTANT: Here the authentications cookies are set, otherwise, you are COOKED.
-            response.set_cookie(key='access_token', value=user_access_token, httponly=False, secure=True, samesite='None', )
+            response.set_cookie(key='access_token', value=user_access_token)
             response.data = {
                 'access_token': user_access_token,
             }
@@ -93,24 +94,28 @@ class UserLoginView(APIView):
             return response
         return Response({'message': 'Server has been destroyed to pieces. Come back later!'})
 
+
+
 class UserLogoutView(APIView):
     authentication_classes = (TokenAuthentication,)
     permission_classes = (AllowAny,)
 
     def get(self, request):
         user_token = request.COOKIES.get('access_token')
+        response = Response()
         if user_token:
-            response = Response()
             response.delete_cookie('access_token')
             response.data = {
                 'message': 'User logged out successfully!'
             }
-            return response
-        response = Response()
-        response.data = {
-            'message': 'No user logged in'
-        }
+        else:
+            response.data = {
+                'message': 'No user logged in'
+            }
         return response
+
+
+
 
 class UserProfileView(APIView):
     authentication_classes = (TokenAuthentication,)
