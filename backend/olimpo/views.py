@@ -86,7 +86,7 @@ class UserLoginView(APIView):
             response = Response()
 
             # VERY IMPORTANT: Here the authentications cookies are set, otherwise, you are COOKED.
-            response.set_cookie(key='access_token', value=user_access_token)
+            response.set_cookie(key='access_token', value=user_access_token, httponly=False, secure=True, samesite='None')
             response.data = {
                 'access_token': user_access_token,
             }
@@ -104,7 +104,7 @@ class UserLogoutView(APIView):
         user_token = request.COOKIES.get('access_token')
         response = Response()
         if user_token:
-            response.delete_cookie('access_token')
+            response.set_cookie(key='access_token', value="", httponly=False, secure=True, samesite='None')
             response.data = {
                 'message': 'User logged out successfully!'
             }
